@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Weihnachtshaus-Abstimmung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: eine Spalte wie ein Familienbrief – Name wählen, Häuser nach Gegend, unten eine feste Leiste zum Abschicken per WhatsApp. */
+:root {
+  --bg: #f3f5f2; --surface: #ffffff; --ink: #18221e; --muted: #56655e; --line: #d9e0dc;
+  --fir: #1f6b4f; --fir-soft: #e1efe8; --berry: #b3324a; --berry-soft: #f8e4e8; --gold: #9a6a14; --gold-soft: #f6ecd9;
+  --wa: #1f7a4a;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111715; --surface: #18211e; --ink: #e8eeeb; --muted: #9aa8a2; --line: #2a3632;
+    --fir: #6cc59f; --fir-soft: #1b3a2e; --berry: #ec7b8b; --berry-soft: #3d1f25; --gold: #e3a54f; --gold-soft: #3a2c17; --wa: #2f9e62;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111715; --surface: #18211e; --ink: #e8eeeb; --muted: #9aa8a2; --line: #2a3632;
+  --fir: #6cc59f; --fir-soft: #1b3a2e; --berry: #ec7b8b; --berry-soft: #3d1f25; --gold: #e3a54f; --gold-soft: #3a2c17; --wa: #2f9e62;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 90px; margin: 0;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+header { padding-block: 28px 0; display: flex; flex-direction: column; gap: 6px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.9rem, 6vw, 2.6rem); line-height: 1.05; margin: 0; letter-spacing: -0.015em; text-wrap: balance; }
+.facts { margin: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.panel p { margin: 0; max-width: 65ch; }
+.panel ol { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+.panel h3 { font-family: var(--display); font-size: 1.15rem; margin: 0; }
+.names { display: flex; flex-wrap: wrap; gap: 8px; }
+.names button {
+  font: inherit; font-size: 1rem; padding: 9px 16px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.names button[aria-pressed="true"] { background: var(--fir); border-color: var(--fir); color: var(--surface); font-weight: 700; }
+textarea {
+  font: inherit; width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+  border-radius: 8px; padding: 9px 11px; min-height: 44px; resize: vertical; font-size: 0.95rem;
+}
+textarea:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--fir); outline-offset: 2px; }
+.status { font-size: 0.88rem; color: var(--muted); }
+
+.region { display: flex; flex-direction: column; gap: 16px; }
+.region > h2 { font-family: var(--display); font-weight: 700; font-size: 1.35rem; margin: 10px 0 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.region > h2 span { font-family: var(--body); font-weight: 400; font-size: 0.88rem; color: var(--muted); }
+article.house { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+.photos { display: grid; grid-auto-flow: column; grid-auto-columns: 82%; gap: 3px; overflow-x: auto; scroll-snap-type: x mandatory; background: var(--line); }
+@media (min-width: 640px) { .photos { grid-auto-columns: calc(50% - 1.5px); } }
+.photos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; scroll-snap-align: start; max-width: 100%; }
+.swipe { font-size: 0.78rem; color: var(--muted); padding: 4px 16px 0; }
+.body { padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.title { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px 14px; flex-wrap: wrap; }
+.title > div { min-width: 0; }
+.nr { font-family: var(--display); font-size: 0.82rem; font-weight: 700; color: var(--fir); letter-spacing: 0.04em; }
+.house h3 { font-family: var(--display); font-weight: 700; font-size: 1.3rem; line-height: 1.15; margin: 1px 0 0; text-wrap: balance; }
+.where { color: var(--muted); font-size: 0.92rem; }
+.price { text-align: right; font-variant-numeric: tabular-nums; }
+.price strong { font-family: var(--display); font-size: 1.3rem; display: block; }
+.price small { color: var(--muted); font-size: 0.82rem; display: block; }
+@media (max-width: 520px) { .price { text-align: left; } }
+dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; font-size: 0.97rem; }
+dt { color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; padding-top: 4px; }
+dd { margin: 0; min-width: 0; }
+@media (max-width: 440px) { dl { grid-template-columns: 1fr; gap: 0; } dd { margin-bottom: 8px; } }
+details { border-top: 1px solid var(--line); padding-top: 8px; }
+summary { cursor: pointer; color: var(--fir); font-weight: 700; font-size: 0.95rem; }
+details[open] summary { margin-bottom: 8px; }
+.link { font-size: 0.92rem; color: var(--fir); font-weight: 700; display: inline-block; margin-top: 8px; }
+.vote { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.choices button {
+  font: inherit; font-size: 0.95rem; padding: 11px 4px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.choices button[data-v="top"][aria-pressed="true"] { background: var(--fir-soft); border-color: var(--fir); color: var(--fir); font-weight: 700; }
+.choices button[data-v="ok"][aria-pressed="true"] { background: var(--gold-soft); border-color: var(--gold); color: var(--gold); font-weight: 700; }
+.choices button[data-v="no"][aria-pressed="true"] { background: var(--berry-soft); border-color: var(--berry); color: var(--berry); font-weight: 700; }
+.others { font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+.others b { color: var(--ink); }
+.others q { font-style: italic; }
+
+.res-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding-block: 6px; border-bottom: 1px solid var(--line); }
+.res-row:last-child { border-bottom: 0; }
+.res-row a { color: var(--ink); font-weight: 700; }
+.bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--bg); grid-column: 1 / -1; }
+.bar i { display: block; height: 100%; }
+.bar .t { background: var(--fir); } .bar .o { background: var(--gold); } .bar .n { background: var(--berry); }
+.res-n { font-variant-numeric: tabular-nums; font-size: 0.88rem; color: var(--muted); white-space: nowrap; }
+
+.sendbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
+  padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.sendbar .in { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.sendbar .count { font-size: 0.9rem; color: var(--muted); min-width: 0; }
+.sendbar .count b { color: var(--ink); }
+.wa { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; background: var(--wa); color: #fff; font-weight: 700; padding: 11px 16px; border-radius: 10px; font-size: 1rem; }
+.wa[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
+.copy { font: inherit; font-size: 0.9rem; background: none; border: 0; color: var(--fir); text-decoration: underline; cursor: pointer; padding: 4px; }
+footer { color: var(--muted); font-size: 0.82rem; }
+footer p { margin: 0 0 6px; max-width: 65ch; }
+
+[hidden] { display: none !important; }
+input[type="password"] { font: inherit; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.btn { font: inherit; font-weight: 700; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--fir); background: var(--fir); color: var(--surface); cursor: pointer; }
+.choices button:disabled { opacity: .5; cursor: not-allowed; }
+textarea:disabled { opacity: .6; }
+img { max-width: 100%; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Weihnachtshaus 2026</h1>
+    <p class="facts">23.–27.12. · wir neun und die zwei Hunde · Budget bis 3.000 € für alle</p>
+  </header>
+
+  <section class="panel" id="gate" aria-labelledby="gate-h">
+    <h3 id="gate-h">Passwort</h3>
+    <p>Pasquale hat dir das Passwort geschickt. Du musst es nur einmal eingeben, das Handy merkt es sich.</p>
+    <form id="gateform" style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="pw" type="password" autocomplete="current-password" aria-label="Passwort" style="flex:1 1 200px">
+      <button type="submit" class="btn">Weiter</button>
+    </form>
+    <div class="status" id="gatemsg" aria-live="polite"></div>
+  </section>
+
+  <div id="app" hidden style="display:flex;flex-direction:column;gap:22px">
+    <section class="panel" aria-label="So geht's">
+      <p>Pasquale hat aus über 150 Häusern diese 17 in die engere Wahl genommen. In alle passen wir zu neunt, und Hunde sind erlaubt.</p>
+      <ol>
+        <li>Tipp auf deinen Namen.</li>
+        <li>Bei jedem Haus <b>Top</b>, <b>Passt</b> oder <b>Lieber nicht</b> antippen. Mehrere „Top“ sind erlaubt, und du musst nicht alle bewerten.</li>
+        <li>Fertig. Alles wird sofort gespeichert, die anderen sehen deine Stimme.</li>
+      </ol>
+      <div>
+        <p style="font-weight:700;margin-bottom:8px">Wer bist du?</p>
+        <div class="names" id="names" role="group" aria-label="Dein Name"></div>
+      </div>
+    </section>
+
+    <main id="houses" style="display:flex;flex-direction:column;gap:26px"></main>
+
+    <section class="panel" aria-labelledby="res-h">
+      <h3 id="res-h">So steht es gerade</h3>
+      <div id="results"></div>
+    </section>
+
+    <footer>
+      <p>Preise: Gesamtpreis inklusive Gebühren laut Buchungsseite, Stand 24.10.2026, wenn nicht anders angegeben für 23.–27.12. Fahrzeiten grob geschätzt, ohne Feiertagsverkehr. Sitzplätze nach den Fotos gezählt.</p>
+      <p>„Notlösung“ heißt: Pasquale + Marcello, Sylvia + Hanna, Petra + Siggi + Solain teilen sich je ein Zimmer.</p>
+    </footer>
+  </div>
+</div>
+
+<div class="sendbar" id="bar" hidden role="status" aria-live="polite">
+  <div class="in"><div class="count" id="count"></div><div class="count" id="saved"></div></div>
+</div>
+
+<script>
+const SB_URL = "https://wmbykwwjonkxxirnspvn.supabase.co";
+const SB_KEY = "sb_publishable_y6UZfKOQu5alVX5bLG4mdw_0ArK0ujw";
+const PEOPLE = ["Pasquale", "Sylvia", "Petra", "Siggi", "Alice", "Mark", "Marcello", "Solain", "Hanna"];
+const DATA = {"H": [{"id": "blekendorf", "r": "ostsee", "name": "Ferienhaus an der Hohwachter Bucht", "short": "Blekendorf", "where": "Blekendorf bei Hohwacht", "price": "2.178 €", "priceNote": "4 Nächte · ca. 240 € pro Person", "drive": "Kiel ca. 45 Min · Hannover ca. 2¾ h", "sleep": "5 Zimmer mit je Doppel- und Einzelbett: Pasquale + Sylvia, Alice + Mark, Petra + Siggi, Hanna für sich, Marcello (Doppelbett) + Solain (Einzelbett)", "seats": "Tafel für etwa 12 · Ecksofa (ca. 5) · 2 Sessel am Kaminofen", "extras": "Kaminofen, großer Garten, Außensauna auf Wunsch", "minus": "Sofaecke etwas kleiner", "rating": "10 von 10 (65 Bewertungen)", "portal": "FeWo-direkt", "url": "https://www.fewo-direkt.de/ferienwohnung-ferienhaus/p2973406?startDate=2026-12-23&endDate=2026-12-27&adults=9&pets=true"}, {"id": "lensahn", "r": "ostsee", "name": "Beamtenhaus auf Gut Lensahn", "short": "Lensahn", "where": "Lensahn, Ostholstein (Strand 15 Min mit dem Auto)", "price": "2.237 €", "priceNote": "4 Nächte · ca. 250 € pro Person", "drive": "Kiel ca. 1 h · Hannover ca. 2½ h", "sleep": "Pasquale + Sylvia und Alice + Mark je King-Bett · Petra + Siggi Queen-Bett · Marcello + Solain Etagenbett (unten 120 cm breit) · Hanna Einzelbett in Zimmer 5 (sieht nach Kinderzimmer aus, Größe noch fragen)", "seats": "Esstisch für 9 im Esszimmer · Ecksofa (ca. 5) mit Sessel und Kamin im Wohnzimmer · Wohnküche", "extras": "Altes Gutshaus, liebevoll und gemütlich eingerichtet, Kamin, kostenlos stornierbar bis 22.12.", "minus": "Essen und Sitzen auf drei Räume verteilt · Doppelhaushälfte · erst 4 Bewertungen", "rating": "4,75 von 5 (4 Bewertungen)", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/1715149091191660276?check_in=2026-12-23&check_out=2026-12-27&adults=9&pets=2"}, {"id": "godewind", "r": "ostsee", "name": "Ferienhaus Godewind", "short": "Godewind", "where": "Brodersby bei Schönhagen, Strand 5 Minuten zu Fuß", "price": "2.121 €", "priceNote": "4 Nächte · ca. 235 € pro Person, Bettwäsche extra", "drive": "Kiel ca. 45 Min · Hannover ca. 3 h", "sleep": "Pasquale + Sylvia und Alice + Mark je Queen-Bett · Zweibettzimmer für Petra + Siggi, Marcello + Solain und Hanna", "seats": "Esstisch für etwa 8 (knapp) · Ecksofa (ca. 6) plus 2 Sessel", "extras": "170 m², Sauna, Kicker, eingezäunter Garten", "minus": "Esstisch knapp für 9 · einfache Küchenzeile", "rating": "4,78 von 5 (9 Bewertungen)", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/1183237411143424046?check_in=2026-12-23&check_out=2026-12-27&adults=9&pets=2"}, {"id": "ploen", "r": "ostsee", "name": "Familienfreundliches Ferienhaus", "short": "Plön", "where": "Kreis Plön", "price": "1.557 €", "priceNote": "4 Nächte · ca. 175 € pro Person", "drive": "Kiel ca. 30 Min · Hannover ca. 2½ h", "sleep": "Pasquale + Sylvia und Alice + Mark je King-Bett · Zweibettzimmer für Petra + Siggi und für Hanna · Marcello + Solain Etagenbett", "seats": "Lange Tafel für etwa 8–10 · Ledersofas (ca. 5–6)", "extras": "Modern und hell, günstig, sehr nah an Kiel", "minus": "Sofaecke eher klein · wirkt eher wie eine große Wohnung", "rating": "9,4 von 10 (49 Bewertungen)", "portal": "FeWo-direkt", "url": "https://www.fewo-direkt.de/ferienwohnung-ferienhaus/p8858423?startDate=2026-12-23&endDate=2026-12-27&adults=9&pets=true"}, {"id": "balje", "r": "nordsee", "name": "Oase Balje", "short": "Oase Balje", "where": "Balje an der Elbmündung (Kehdingen)", "price": "2.286 €", "priceNote": "4 Nächte · ca. 255 € pro Person", "drive": "Kiel ca. 2 h (mit Elbfähre) · Hannover ca. 2½ h", "sleep": "Pasquale + Sylvia, Alice + Mark, Petra + Siggi je King-Bett · Marcello + Solain Zweibettzimmer · Hanna eigenes Zimmer", "seats": "Lange Tafel für etwa 12 · große Sofagruppe (ca. 7) plus 2 Ledersessel · Kaminofen im TV-Zimmer", "extras": "Frisch renoviert, großer offener Wohn- und Essraum, Garten mit Pool (im Winter zu)", "minus": "Erst 4 Bewertungen · Wendeltreppe nach oben", "rating": "9,6 von 10 (4 Bewertungen)", "portal": "FeWo-direkt", "url": "https://www.fewo-direkt.de/ferienwohnung-ferienhaus/p5463467?startDate=2026-12-23&endDate=2026-12-27&adults=9&pets=true"}, {"id": "elbdomizil", "r": "nordsee", "name": "Elbdomizil", "short": "Elbdomizil", "where": "Landkreis Cuxhaven, nahe der Elbe", "price": "1.379 €", "priceNote": "4 Nächte · ca. 155 € pro Person", "drive": "Kiel ca. 2–2½ h · Hannover ca. 2½ h", "sleep": "4 Doppelzimmer, zwei davon mit Schlafsofa – nur als Notlösung: Pasquale + Marcello, Sylvia + Hanna, Petra + Siggi + Solain, Alice + Mark", "seats": "Zwei Sofas am Kamin (ca. 6) plus Sessel · Größe des Esstischs auf den Fotos unklar", "extras": "Modern renoviert, offener Wohnraum mit Holzbalken und Kamin, Sauna, großer Garten mit Teich, günstig", "minus": "Schlafen nur mit Notlösung · Esstisch für 9 müsste man erfragen", "rating": "9,2 von 10 (17 Bewertungen)", "portal": "FeWo-direkt", "url": "https://www.fewo-direkt.de/ferienwohnung-ferienhaus/p5272992?startDate=2026-12-23&endDate=2026-12-27&adults=9&pets=true"}, {"id": "butjapark", "r": "nordsee", "name": "ButjaPark-Villa", "short": "ButjaPark", "where": "Tossens, Butjadingen (12 Minuten zum Strand)", "price": "2.694 €", "priceNote": "4 Nächte · ca. 300 € pro Person", "drive": "Hannover ca. 2½ h · Kiel ca. 3 h", "sleep": "Doppelzimmer für Pasquale + Sylvia, Alice + Mark, Petra + Siggi und Hanna · Zweibettzimmer für Marcello + Solain", "seats": "Tafel für etwa 10 · zwei gelbe Sofas (ca. 6) plus Sessel · alles in einem großen Raum", "extras": "Neubau, hell und modern", "minus": "Eines der teuersten · erst 3 Bewertungen", "rating": "10 von 10 (3 Bewertungen)", "portal": "FeWo-direkt", "url": "https://www.fewo-direkt.de/ferienwohnung-ferienhaus/p5721869?startDate=2026-12-23&endDate=2026-12-27&adults=9&pets=true"}, {"id": "maarweg", "r": "nordsee", "name": "Landhaus Maarweg", "short": "Maarweg", "where": "Ostfriesland, 11 Minuten zum Strand", "price": "2.133 €", "priceNote": "4 Nächte · ca. 235 € pro Person", "drive": "Hannover ca. 2½–3 h · Kiel ca. 3½ h", "sleep": "5 Doppelzimmer – nur als Notlösung: Alice + Mark, Pasquale + Marcello, Sylvia + Hanna, Petra + Siggi, Solain für sich", "seats": "Tafel für etwa 10 · Sofagarnitur (ca. 6–7) plus Sessel · Kaminofen", "extras": "Modern mit hohen Holzbalken, Garten", "minus": "Nur Doppelbetten, deshalb Notlösung", "rating": "10 von 10 (7 Bewertungen)", "portal": "FeWo-direkt", "url": "https://www.fewo-direkt.de/ferienwohnung-ferienhaus/p5474276?startDate=2026-12-23&endDate=2026-12-27&adults=9&pets=true"}, {"id": "janssen", "r": "nordsee", "name": "Ferienhaus auf dem Ferienhof Janssen", "short": "Janssen", "where": "Wangerland, Nordsee", "price": "ca. 2.400 €", "priceNote": "4 Nächte inkl. Hunde · ca. 265 € pro Person", "drive": "Hannover ca. 2½ h · Kiel ca. 3 h", "sleep": "Pasquale + Sylvia und Alice + Mark je Queen-Bett · Petra + Siggi im Dreierzimmer · Zweibettzimmer für Marcello + Solain und für Hanna", "seats": "Esstisch für etwa 6–8 · Ecksofa (ca. 5)", "extras": "Gepflegter Landhausstil, Ferienhof, auch 24.–28.12. möglich", "minus": "Nur ein Bad für alle · Esstisch eher zu klein · noch keine Bewertungen", "rating": "neu, noch keine Bewertungen", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/1623101204029622691?check_in=2026-12-23&check_out=2026-12-27&adults=9&pets=2"}, {"id": "wittmaack", "r": "nordsee", "name": "Landhaus Wittmaack", "short": "Wittmaack", "where": "Nordfriesland", "price": "2.765 €", "priceNote": "4 Nächte · ca. 305 € pro Person", "drive": "Kiel ca. 1½–2 h · Hannover ca. 3–3½ h", "sleep": "7 Doppelzimmer – jede und jeder bekommt ein eigenes Zimmer, auch Marcello und Solain", "seats": "Zwei Küchen mit Tischen für je 6–8 · Ecksofa (ca. 5) und ein zweites Wohnzimmer", "extras": "Neues Landhaus, sehr großzügig, eingezäuntes Grundstück", "minus": "Wirkt wie zwei Wohnungen – unklar, ob alle an einen Tisch passen · teuerstes Haus", "rating": "10 von 10 (4 Bewertungen)", "portal": "FeWo-direkt", "url": "https://www.fewo-direkt.de/ferienwohnung-ferienhaus/p5576851?startDate=2026-12-23&endDate=2026-12-27&adults=9&pets=true"}, {"id": "skaerbaek", "r": "dk", "name": "Landhaus bei Skærbæk", "short": "Skærbæk", "where": "Nahe Rømø", "price": "1.589 €", "priceNote": "4 Nächte · ca. 175 € pro Person, Strom kommt dazu", "drive": "Kiel ca. 2 h · Hannover ca. 3¾ h", "sleep": "Queen-Betten für Pasquale + Sylvia, Alice + Mark, Petra + Siggi und Hanna · Zweibettzimmer für Marcello + Solain", "seats": "Tafel für etwa 10 · großes Ecksofa (ca. 6) plus Sessel · Holzofen", "extras": "Viel Platz, Billardtisch, günstig, auch 24.–28.12. möglich", "minus": "Etwas kahl eingerichtet · noch keine Bewertungen · Strom wird extra abgerechnet", "rating": "neu, noch keine Bewertungen", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/1651297780588663130?check_in=2026-12-23&check_out=2026-12-27&adults=9&pets=2"}, {"id": "hoejer", "r": "dk", "name": "Großes Haus in Højer", "short": "Højer", "where": "Højer, direkt am Wattenmeer", "price": "2.470 €", "priceNote": "4 Nächte · ca. 275 € pro Person, Strom noch fragen", "drive": "Kiel ca. 1¾ h · Hannover ca. 3½ h", "sleep": "Queen-Betten für Pasquale + Sylvia, Alice + Mark und Petra + Siggi · Einzelzimmer für Hanna · Zweibettzimmer für Marcello + Solain", "seats": "Lange Tafel für etwa 14 · mehrere kleinere Sitzecken statt einer großen", "extras": "Sehr viel Platz, Billard, Tischtennis, Kicker, auch 24.–28.12. möglich", "minus": "Sitzplätze verteilt · eher kühl eingerichtet · nach 24 Stunden nicht mehr stornierbar", "rating": "5 von 5 (1 Bewertung)", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/1628013542290293492?check_in=2026-12-23&check_out=2026-12-27&adults=9&pets=2"}, {"id": "bredebro", "r": "dk", "name": "Brink Møllegaard", "short": "Bredebro", "where": "Reetgedeckter Hof bei Bredebro am Wattenmeer", "price": "ca. 1.360 €", "priceNote": "4 Nächte · ca. 150 € pro Person", "drive": "Kiel ca. 1¾ h · Hannover ca. 3½ h", "sleep": "Doppelbetten für Pasquale + Sylvia, Alice + Mark und Petra + Siggi · Marcello + Solain Etagenbett · Hanna auf einem Schlafsofa", "seats": "Bauerntisch mit Bank für etwa 8–10 · zwei Sofas am Holzofen", "extras": "240 m² Bauernhaus, Billard, Kicker, Darts, Liebling vieler Gäste, günstig", "minus": "Hanna hätte nur ein Schlafsofa · Sitzecke auf den Fotos kaum zu sehen", "rating": "4,98 von 5 (250 Bewertungen)", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/5879628?check_in=2026-12-23&check_out=2026-12-27&adults=9&pets=2"}, {"id": "vlagtwedde", "r": "nl", "name": "Familienhaus mit Wellness", "short": "Vlagtwedde", "where": "Vlagtwedde, direkt an einem See", "price": "ca. 2.530 €", "priceNote": "24.–28.12. · inkl. Hunde und Kurtaxe · ca. 280 € pro Person", "drive": "Hannover ca. 2½ h · Kiel ca. 3½ h", "sleep": "Pasquale + Sylvia Doppelbett · Zweibettzimmer für Alice + Mark, Petra + Siggi, Marcello + Solain und Hanna", "seats": "Tafel für 10–12 · großes L-Sofa (ca. 7) plus Sessel", "extras": "Sauna und Whirlpool im Garten, direkt am Wasser", "minus": "Nur 24.–28.12. frei · Bettwäsche mitbringen · noch keine Bewertungen · eher Hotel-Look", "rating": "neu, noch keine Bewertungen", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/847649646767941873?check_in=2026-12-24&check_out=2026-12-28&adults=9&pets=2"}, {"id": "earnewald", "r": "nl", "name": "Ferienvilla am Wasser", "short": "Earnewâld", "where": "Earnewâld, Friesland, im Nationalpark", "price": "2.331 €", "priceNote": "nur 22.–26.12. · ca. 260 € pro Person", "drive": "Hannover ca. 3½ h · Kiel ca. 4 h", "sleep": "12 Einzelbetten in 5 Zimmern, die Paare schieben zusammen – passt für alle", "seats": "Wohnraum von etwa 75 m² mit Tafel für 8–10 und Seeblick · aber nur wenige Sofaplätze", "extras": "Direkt am Wasser, Bettwäsche inklusive, sehr viele gute Bewertungen", "minus": "Nur 22.–26.12. frei · Hunde nur nach Absprache · weit von Kiel", "rating": "4,77 von 5 (160 Bewertungen)", "portal": "Airbnb", "url": "https://www.airbnb.de/rooms/42463136?check_in=2026-12-22&check_out=2026-12-26&adults=9&pets=2"}, {"id": "bentheim", "r": "park", "name": "Landal Bad Bentheim", "short": "Bad Bentheim", "where": "Ferienpark an der niederländischen Grenze", "price": "1.981 €", "priceNote": "23.–28.12., 5 Nächte · ca. 220 € pro Person", "drive": "Hannover ca. 2 h · Kiel ca. 3½ h", "sleep": "Pasquale + Sylvia Doppelbett · Zweibettzimmer für Alice + Mark, Petra + Siggi, Marcello + Solain und Hanna", "seats": "Lange Tafel für etwa 12 · großes L-Sofa (ca. 6) plus Sessel", "extras": "Sauna im Haus, Hallenbad im Park, Bettwäsche, Endreinigung und Energie inklusive", "minus": "Ferienpark-Gefühl, eher sachlich · nur mit 5 Nächten buchbar · Hunde vorher telefonisch bestätigen", "rating": "Park 4,3 von 5", "portal": "Landal", "url": "https://www.landal.de/parks/ferienresort-bad-bentheim/unterkuenfte/fv12l-comfort"}, {"id": "dwergter", "r": "park", "name": "Landal Dwergter Sand", "short": "Dwergter Sand", "where": "Ferienpark bei Molbergen, Oldenburger Münsterland", "price": "1.513 €", "priceNote": "23.–28.12., 5 Nächte · ca. 170 € pro Person", "drive": "Hannover ca. 2 h · Kiel ca. 3 h", "sleep": "5 Zweibettzimmer: die Paare schieben zusammen, Marcello + Solain und Hanna haben je ein Zimmer", "seats": "Esstisch für etwa 8 (knapp) · große U-Couch (ca. 7) plus 3 Sessel", "extras": "Günstig, alles inklusive, freistehendes Haus", "minus": "Ferienpark-Gefühl · kein Kamin · Tisch knapp für 9", "rating": "Park 4,3 von 5", "portal": "Landal", "url": "https://www.landal.de/parks/dwergter-sand/unterkuenfte/10c"}], "R": [{"key": "ostsee", "name": "Ostsee", "note": "nah an Kiel"}, {"key": "nordsee", "name": "Nordsee und Elbe", "note": "Mitte zwischen Kiel und Hannover"}, {"key": "dk", "name": "Dänemark", "note": "Süddänemark am Wattenmeer"}, {"key": "nl", "name": "Niederlande", "note": "näher an Hannover"}, {"key": "park", "name": "Ferienparks", "note": "Landal, alles inklusive"}]};
+const REGIONS = DATA.R, HOUSES = DATA.H;
+const VLABEL = { top: "Top", ok: "Passt", no: "Lieber nicht" };
+HOUSES.forEach((h, i) => h.nr = i + 1);
+
+const me = { name: "", wahl: {} };
+let pw = "", remote = {}, dirty = false;
+
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+async function rpc(fn, body) {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+    method: "POST",
+    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) { const t = await r.text(); const e = new Error(t); e.status = r.status; e.badpw = /falsches Passwort/.test(t); throw e; }
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+
+function houseHTML(h) {
+  const pics = [1, 2, 3, 4].map(k => `<img src="img/${h.id}-${k}.jpg" alt="${esc((h.alt || [])[k - 1] || h.name)}" loading="lazy" decoding="async" width="400" height="300">`).join("");
+  return `<article class="house" id="h-${h.id}" data-id="${h.id}">
+    <div class="photos" tabindex="0" aria-label="Fotos ${esc(h.name)}">${pics}</div>
+    <div class="swipe">Wischen für mehr Fotos</div>
+    <div class="body">
+      <div class="title">
+        <div><div class="nr">Nr. ${h.nr}</div><h3>${esc(h.name)}</h3><div class="where">${esc(h.where)}</div></div>
+        <div class="price"><strong>${esc(h.price)}</strong><small>${esc(h.priceNote)}</small></div>
+      </div>
+      <dl>
+        <dt>Anfahrt</dt><dd>${esc(h.drive)}</dd>
+        <dt>Schlafen</dt><dd>${esc(h.sleep)}</dd>
+        <dt>Beisammen</dt><dd>${esc(h.seats)}</dd>
+      </dl>
+      <details>
+        <summary>Mehr zu diesem Haus</summary>
+        <dl>
+          <dt>Schön</dt><dd>${esc(h.extras)}</dd>
+          <dt>Aber</dt><dd>${esc(h.minus)}</dd>
+          <dt>Bewertung</dt><dd>${esc(h.rating)}</dd>
+        </dl>
+        <a class="link" href="${h.url}" target="_blank" rel="noopener">Alle Fotos auf ${esc(h.portal)} ansehen ↗</a>
+      </details>
+      <div class="vote">
+        <div class="choices" role="group" aria-label="Deine Meinung zu ${esc(h.name)}">
+          <button type="button" data-v="top" aria-pressed="false">Top</button>
+          <button type="button" data-v="ok" aria-pressed="false">Passt</button>
+          <button type="button" data-v="no" aria-pressed="false">Lieber nicht</button>
+        </div>
+        <textarea id="k-${h.id}" rows="1" placeholder="Kommentar (freiwillig)" aria-label="Kommentar zu ${esc(h.name)}"></textarea>
+        <div class="others" id="o-${h.id}"></div>
+      </div>
+    </div>
+  </article>`;
+}
+
+function render() {
+  document.getElementById("names").innerHTML = PEOPLE.map(n => `<button type="button" data-n="${n}" aria-pressed="false">${n}</button>`).join("");
+  document.getElementById("houses").innerHTML = REGIONS.map(r => {
+    const hs = HOUSES.filter(h => h.r === r.key);
+    return `<section class="region"><h2>${esc(r.name)} <span>${esc(r.note)}</span></h2>${hs.map(houseHTML).join("")}</section>`;
+  }).join("");
+}
+
+function allVotes() {
+  const out = {};
+  for (const [n, w] of Object.entries(remote)) out[n] = w || {};
+  if (me.name) out[me.name] = me.wahl;
+  return out;
+}
+
+function applyState() {
+  document.querySelectorAll("#names button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.n === me.name)));
+  const all = allVotes();
+  for (const h of HOUSES) {
+    const el = document.getElementById("h-" + h.id);
+    const mine = me.wahl[h.id] || {};
+    el.querySelectorAll(".choices button").forEach(b => { b.setAttribute("aria-pressed", String(b.dataset.v === mine.v)); b.disabled = !me.name; });
+    const ta = el.querySelector("textarea");
+    ta.disabled = !me.name;
+    if (document.activeElement !== ta && ta.value !== (mine.k || "")) ta.value = mine.k || "";
+    const others = Object.entries(all).filter(([n]) => n !== me.name).map(([n, w]) => ({ n, w: w[h.id] })).filter(x => x.w && (x.w.v || x.w.k));
+    document.getElementById("o-" + h.id).innerHTML = others.map(x => `<div><b>${esc(x.n)}</b>: ${x.w.v ? esc(VLABEL[x.w.v]) : "–"}${x.w.k ? ` · <q>${esc(x.w.k)}</q>` : ""}</div>`).join("");
+  }
+  renderResults(all);
+  const n = HOUSES.filter(h => (me.wahl[h.id] || {}).v).length;
+  document.getElementById("count").innerHTML = me.name ? `<b>${esc(me.name)}</b>: ${n} von ${HOUSES.length} bewertet` : "Bitte oben deinen Namen antippen.";
+}
+
+function renderResults(all) {
+  const names = Object.keys(all).filter(n => Object.values(all[n] || {}).some(w => w && w.v));
+  const rows = HOUSES.map(h => {
+    const c = { top: 0, ok: 0, no: 0 };
+    names.forEach(n => { const v = ((all[n] || {})[h.id] || {}).v; if (v) c[v]++; });
+    return { h, c, n: c.top + c.ok + c.no, score: c.top * 2 + c.ok - c.no * 2 };
+  }).sort((a, b) => b.score - a.score || b.c.top - a.c.top || a.h.nr - b.h.nr);
+  document.getElementById("results").innerHTML = names.length
+    ? `<p style="color:var(--muted);font-size:.92rem">Abgestimmt: ${names.map(esc).join(", ")}. Sortiert nach Top, dann Passt.</p>` +
+      rows.map(r => `<div class="res-row"><div><a href="#h-${r.h.id}">Nr. ${r.h.nr} ${esc(r.h.name)}</a></div><div class="res-n">${r.c.top} Top · ${r.c.ok} Passt · ${r.c.no} Nein</div>
+        <div class="bar" aria-hidden="true">${r.n ? `<i class="t" style="width:${r.c.top / r.n * 100}%"></i><i class="o" style="width:${r.c.ok / r.n * 100}%"></i><i class="n" style="width:${r.c.no / r.n * 100}%"></i>` : ""}</div></div>`).join("")
+    : `<p style="color:var(--muted)">Noch keine Stimmen.</p>`;
+}
+
+function setSaved(t) { document.getElementById("saved").textContent = t; }
+
+let saving = false, again = false, timer = null;
+async function save() {
+  lsSet("wh26-me", { name: me.name, wahl: me.wahl });
+  if (!me.name) return;
+  if (saving) { again = true; return; }
+  saving = true; setSaved("Speichert …");
+  try { await rpc("wh_save_vote", { p_pw: pw, p_name: me.name, p_wahl: me.wahl }); remote[me.name] = JSON.parse(JSON.stringify(me.wahl)); dirty = false; setSaved("Gespeichert ✓"); }
+  catch (e) { setSaved("Nicht gespeichert – kein Netz? Es wird gleich nochmal versucht."); dirty = true; setTimeout(save, 8000); }
+  saving = false;
+  if (again) { again = false; save(); }
+}
+function saveSoon(ms) { dirty = true; clearTimeout(timer); timer = setTimeout(save, ms); }
+
+async function refresh() {
+  try {
+    const rows = await rpc("wh_get_votes", { p_pw: pw });
+    remote = {}; (rows || []).forEach(r => remote[r.name] = r.wahl || {});
+    applyState();
+  } catch (e) { if (e.badpw) logout(); }
+}
+
+function logout() { lsSet("wh26-pw", null); pw = ""; document.getElementById("app").hidden = true; document.getElementById("bar").hidden = true; document.getElementById("gate").hidden = false; }
+
+async function enter(p, silent) {
+  const msg = document.getElementById("gatemsg");
+  if (!silent) msg.textContent = "Prüfe …";
+  try {
+    const rows = await rpc("wh_get_votes", { p_pw: p });
+    pw = p; lsSet("wh26-pw", p);
+    remote = {}; (rows || []).forEach(r => remote[r.name] = r.wahl || {});
+    if (me.name) { if (remote[me.name]) me.wahl = JSON.parse(JSON.stringify(remote[me.name])); else if (Object.keys(me.wahl).length) saveSoon(500); }
+    document.getElementById("gate").hidden = true;
+    document.getElementById("app").hidden = false;
+    document.getElementById("bar").hidden = false;
+    applyState();
+    setInterval(() => { if (!dirty && !saving) refresh(); }, 20000);
+  } catch (e) {
+    msg.textContent = e.badpw ? "Das Passwort stimmt nicht. Groß- und Kleinschreibung beachten." : "Keine Verbindung. Bitte gleich noch einmal versuchen.";
+    if (e.badpw) lsSet("wh26-pw", null);
+  }
+}
+
+document.getElementById("gateform").addEventListener("submit", e => { e.preventDefault(); enter(document.getElementById("pw").value.trim()); });
+document.getElementById("names").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.n === me.name) return;
+  me.name = b.dataset.n;
+  me.wahl = JSON.parse(JSON.stringify(remote[me.name] || {}));
+  lsSet("wh26-me", { name: me.name, wahl: me.wahl });
+  setSaved("");
+  applyState();
+});
+document.getElementById("houses").addEventListener("click", e => {
+  const b = e.target.closest(".choices button"); if (!b || !me.name) return;
+  const id = b.closest("article").dataset.id;
+  const cur = me.wahl[id] || {};
+  me.wahl[id] = { ...cur, v: cur.v === b.dataset.v ? "" : b.dataset.v };
+  applyState(); saveSoon(300);
+});
+document.getElementById("houses").addEventListener("input", e => {
+  if (e.target.tagName !== "TEXTAREA" || !me.name) return;
+  const id = e.target.closest("article").dataset.id;
+  me.wahl[id] = { ...(me.wahl[id] || {}), k: e.target.value };
+  saveSoon(1200);
+});
+
+render();
+const savedMe = lsGet("wh26-me");
+if (savedMe && savedMe.name) { me.name = savedMe.name; me.wahl = savedMe.wahl || {}; }
+const savedPw = lsGet("wh26-pw");
+if (savedPw) enter(savedPw, true);
+</script>
+
+</body>
+</html>
