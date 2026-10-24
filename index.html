@@ -129,12 +129,12 @@ img { max-width: 100%; }
 <div class="wrap">
   <header>
     <h1>Weihnachtshaus 2026</h1>
-    <p class="facts">23.–27.12. · wir neun und die zwei Hunde · Budget bis 3.000 € für alle</p>
+    <p class="facts" id="facts" hidden>23.–27.12. · wir neun und die zwei Hunde · Budget bis 3.000 € für alle</p>
   </header>
 
   <section class="panel" id="gate" aria-labelledby="gate-h">
     <h3 id="gate-h">Passwort</h3>
-    <p>Pasquale hat dir das Passwort geschickt. Du musst es nur einmal eingeben, das Handy merkt es sich.</p>
+    <p>Bitte gib das Passwort ein. Du musst das nur einmal machen, dein Gerät merkt es sich.</p>
     <form id="gateform" style="display:flex;gap:8px;flex-wrap:wrap">
       <input id="pw" type="password" autocomplete="current-password" aria-label="Passwort" style="flex:1 1 200px">
       <button type="submit" class="btn">Weiter</button>
@@ -307,7 +307,7 @@ async function refresh() {
   } catch (e) { if (e.badpw) logout(); }
 }
 
-function logout() { lsSet("wh26-pw", null); pw = ""; document.getElementById("app").hidden = true; document.getElementById("bar").hidden = true; document.getElementById("gate").hidden = false; }
+function logout() { lsSet("wh26-pw", null); pw = ""; document.getElementById("facts").hidden = true; document.getElementById("app").hidden = true; document.getElementById("bar").hidden = true; document.getElementById("gate").hidden = false; }
 
 async function enter(p, silent) {
   const msg = document.getElementById("gatemsg");
@@ -318,6 +318,7 @@ async function enter(p, silent) {
     remote = {}; (rows || []).forEach(r => remote[r.name] = r.wahl || {});
     if (me.name) { if (remote[me.name]) me.wahl = JSON.parse(JSON.stringify(remote[me.name])); else if (Object.keys(me.wahl).length) saveSoon(500); }
     document.getElementById("gate").hidden = true;
+    document.getElementById("facts").hidden = false;
     document.getElementById("app").hidden = false;
     document.getElementById("bar").hidden = false;
     applyState();
