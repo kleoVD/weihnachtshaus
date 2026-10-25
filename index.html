@@ -332,9 +332,9 @@ function initMap() {
   const col = Object.fromEntries(REGIONS.map(r => [r.key, r.c]));
   document.getElementById("legend").innerHTML = `<li><button type="button" data-r="">Alle</button></li>` + REGIONS.map(r => `<li><button type="button" data-r="${r.key}"><i style="background:${r.c}"></i>${esc(r.name)}</button></li>`).join("");
   map = L.map("map", { scrollWheelZoom: false, dragging: !L.Browser.mobile, tap: false, zoomSnap: 0.5 });
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    maxZoom: 18, subdomains: "abcd",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
   const pts = [];
   for (const h of HOUSES) {
